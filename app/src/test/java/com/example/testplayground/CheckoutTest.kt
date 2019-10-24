@@ -3,12 +3,13 @@ package com.example.testplayground
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
-var prices = listOf(
+
+var prices: Map<Char, Int> = listOf(
     ItemPrice(name = 'A', price = 50),
     ItemPrice(name = 'B', price = 30),
     ItemPrice(name = 'C', price = 20),
     ItemPrice(name = 'D', price = 15)
-)
+).associateBy { it.name }.mapValues { it.value.price }
 
 var discountRules = listOf(
     DiscountRule(name = 'A', counter = 5, discount = 50),
@@ -89,18 +90,18 @@ class CheckoutTest {
     }
 
 
-    fun price(good: String): Int {
+    fun price(item: String): Int {
 
         var priceBeforeDiscount = 0
         var finalPrice = 0
         var discount = 0
         val map = HashMap<Char, Int>()
-        good.forEach {
+        item.forEach {
             var current = map[it] ?: 0
             map[it] = ++current
         }
-        good.forEach {
-            priceBeforeDiscount += itemPrice(it.toString())
+        item.forEach {
+            priceBeforeDiscount += getItemPrice(it)
         }
         discount = getTotalDiscount(map)
         finalPrice = priceBeforeDiscount - discount
@@ -109,40 +110,22 @@ class CheckoutTest {
 
     private fun getTotalDiscount(map: HashMap<Char, Int>): Int {
         var discount = 0
-        map.forEach { (item, number) ->
-            when (item) {
-                'A' -> {
-                    var currentNumber = map[item] ?: 0
-
-                    // Big A discount
-                    val bigACounter = currentNumber / 5
-                    currentNumber -= bigACounter * 5
-                    discount += bigACounter * 50
-
-                    // Small A discount
-                    val smallACounter = currentNumber / 3
-                    currentNumber -= smallACounter * 3
-                    discount += smallACounter * 20
-
-                }
-                'B' -> discount += (number / 2) * 15
+        discountRules.forEach { rule ->
+            val currentNumber = map[rule.name]
+            currentNumber?.let {
+                val counter = currentNumber / rule.counter
+                map[rule.name] = currentNumber - counter * rule.counter
+                discount += counter * rule.discount
             }
-
         }
         return discount
     }
 
-    private fun itemPrice(good: String): Int {
-        return when (good) {
-            "A" -> 50
-            "B" -> 30
-            "C" -> 20
-            "D" -> 15
-            else -> 0
-        }
+    private fun getItemPrice(name: Char): Int {
+        return prices[name] ?: 0
     }
 }
 
-class ItemPrice(name: Char, price: Int)
+class ItemPrice(val name: Char, val price: Int)
 
 class DiscountRule(val name: Char, val counter: Int, val discount: Int)
