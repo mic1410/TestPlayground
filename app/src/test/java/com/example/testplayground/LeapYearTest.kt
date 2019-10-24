@@ -1,7 +1,7 @@
 package com.example.testplayground
 
+import com.example.testplayground.utils.YearUtils
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Assert
 import org.junit.Test
 
 class LeapYearTest {
@@ -12,7 +12,7 @@ class LeapYearTest {
         val year = 2004
 
         //when
-        val result = isLeapYear(year)
+        val result = YearUtils().isLeapYear(year)
 
         //then
         assertThat(result).isTrue()
@@ -24,7 +24,7 @@ class LeapYearTest {
         val year = 2005
 
         //when
-        val result = isLeapYear(year)
+        val result = YearUtils().isLeapYear(year)
 
         //then
         assertThat(result).isFalse()
@@ -32,16 +32,12 @@ class LeapYearTest {
 
     @Test
     fun `1900 is not a leap year`() {
-        assertThat(isLeapYear(1900)).isFalse()
+        assertThat(YearUtils().isLeapYear(1900)).isFalse()
     }
 
     @Test
     fun `2000 is a leap year`() {
-        assertThat(isLeapYear(2000)).isTrue()
-    }
-
-    private fun isLeapYear(year: Int): Boolean {
-        return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
+        assertThat(YearUtils().isLeapYear(2000)).isTrue()
     }
 
     //given
