@@ -3,6 +3,19 @@ package com.example.testplayground
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
+var prices = listOf(
+    ItemPrice(name = 'A', price = 50),
+    ItemPrice(name = 'B', price = 30),
+    ItemPrice(name = 'C', price = 20),
+    ItemPrice(name = 'D', price = 15)
+)
+
+var discountRules = listOf(
+    DiscountRule(name = 'A', counter = 5, discount = 50),
+    DiscountRule(name = 'A', counter = 3, discount = 20),
+    DiscountRule(name = 'B', counter = 2, discount = 15)
+)
+
 class CheckoutTest {
 
     @Test
@@ -70,6 +83,11 @@ class CheckoutTest {
         assertThat(price("AAAAA")).isEqualTo(200)
     }
 
+    @Test
+    fun `after scanning AAAAAAAA checkout price is 330`() {
+        assertThat(price("AAAAAAAA")).isEqualTo(330)
+    }
+
 
     fun price(good: String): Int {
 
@@ -84,9 +102,16 @@ class CheckoutTest {
         good.forEach {
             priceBeforeDiscount += itemPrice(it.toString())
         }
+        discount = getTotalDiscount(map)
+        finalPrice = priceBeforeDiscount - discount
+        return finalPrice
+    }
+
+    private fun getTotalDiscount(map: HashMap<Char, Int>): Int {
+        var discount = 0
         map.forEach { (item, number) ->
-            when (item.toString()) {
-                "A" -> {
+            when (item) {
+                'A' -> {
                     var currentNumber = map[item] ?: 0
 
                     // Big A discount
@@ -100,12 +125,11 @@ class CheckoutTest {
                     discount += smallACounter * 20
 
                 }
-                "B" -> discount += (number / 2) * 15
+                'B' -> discount += (number / 2) * 15
             }
 
         }
-        finalPrice = priceBeforeDiscount - discount
-        return finalPrice
+        return discount
     }
 
     private fun itemPrice(good: String): Int {
@@ -118,3 +142,7 @@ class CheckoutTest {
         }
     }
 }
+
+class ItemPrice(name: Char, price: Int)
+
+class DiscountRule(val name: Char, val counter: Int, val discount: Int)
